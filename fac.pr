@@ -1,0 +1,16 @@
+let idOnN = Pi 1 1;
+let sucOfFirst = C S [Pi 3 1]; 
+let plus = P idOnN sucOfFirst ;
+
+
+
+let hmul = C plus [Pi 3 1, Pi 3 3];
+let mul = P (Z 1)  hmul;
+
+
+
+
+let gfac = C S [Z 0 ];
+let hfac = C mul [Pi 2 1, (C S [Pi 2 2] ) ] ;  -- parser error on ])
+let fac = P gfac hfac;
+

@@ -1,0 +1,8 @@
+
+
+let idOnN = Pi 1 1 in
+let sucOfFirst = C S [Pi 3 1] in
+let plus = P idOnN sucOfFirst in
+
+run plus [10,20]
+
