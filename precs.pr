@@ -1,0 +1,245 @@
+
+
+let idOnN = Pi 1 1;
+let sucOfFirst = C S [Pi 3 1]; 
+let plus = P idOnN sucOfFirst ;
+
+--compare Hsplus with plus;
+compare [e| (+) |] with plus;
+
+let hmul = C plus [Pi 3 1, Pi 3 3];
+let mul = P (Z 1)  hmul;
+
+-- compare Hsmul with mul;
+compare [e| (*) |] with mul;
+
+let gdec = Z 0;
+let hdec = Pi 2 2 ;
+let dec = P gdec hdec;
+
+
+
+
+let gminus = Pi 1 1;
+let hminus = C dec [Pi 3 1];
+let minus = P gminus hminus;
+
+-- compare Hsminus with minus;
+compare [e| \ x y -> max (y - x) 0 |] with minus;
+
+
+
+let swappedminus = C minus [Pi 2 2, Pi 2 1];
+
+
+let gfac = C S [Z 0 ];
+let hfac = C mul [Pi 2 1, (C S [Pi 2 2] ) ] ;  -- parser error on ])
+let fac = P gfac hfac;
+
+
+let unaryOne = C S [ Z 1 ];
+
+
+
+let oneMinus = C swappedminus [unaryOne , idOnN ]; 
+
+
+let ifElseHelper = P ( Pi 2 2 ) ( Pi 4 3 ) ;
+compare [e| \ x y z -> if x == 0 then z else y |] with ifElseHelper;
+
+
+
+-- let ifElse = \ b : PR 3 f1 : PR 3 f2 : PR 3 -> C plus [C mul [b ,f1]   , C mul [C oneMinus [ b ] ,f2]  ];
+let ifElse = \ b : PR 3 f1 : PR 3 f2 : PR 3 -> C ifElseHelper [b, f1 ,f2 ];
+
+
+let isZero = P ( C S [Z 0] )  ( Z 2 );
+
+--compare HsisZero with isZero;
+compare [e| \ x  -> if x == 0 then 1 else 0 |] with isZero;
+
+
+let notZero = C oneMinus [isZero];
+
+
+
+let smaller = C notZero [minus];
+
+
+let remG =  Z 1;
+
+let remHf1 = C S [ Pi 3 1];
+
+let remHf2 = Z 3; 
+
+let remHb = C smaller [ C plus [ Pi 3 1, C S [Z 3] ] , Pi 3 3 ];
+ 
+let remH = ifElse remHb remHf1 remHf2;
+
+let rem = P remG remH;
+
+--compare Hsrem with rem;
+compare [e| \ x y  -> if y == 0 then 0 else rem x y |] with rem;
+
+
+
+let swappedRem = C rem [Pi 2 2, Pi 2 1];
+
+let bothNotZero =  C mul [ C notZero [ Pi 2 1 ] , C notZero [ Pi 2 2 ] ];
+
+let bothNotZeroAndRemIsZero = C mul [ bothNotZero, C isZero [ swappedRem ] ] ;
+
+let divides = C plus [ C isZero [ Pi 2 2 ] , bothNotZeroAndRemIsZero   ] ;
+
+
+
+let equal =  C isZero [ C plus [ minus , swappedminus ] ];
+
+-- compare Hsequal with equal;
+compare [e| \ x y -> if x == y then 1 else 0 |] with equal;
+
+
+let isOne = C equal [Pi 1 1, unaryOne ];
+
+
+let l49 = \ xsiA : PR 2 -> P (unaryOne) ( C mul [Pi 3 1, C xsiA [ Pi 3 2, Pi 3 3  ]  ]) ;
+
+
+let biggerThanOne = C smaller [unaryOne , Pi 1 1  ];
+
+
+let primHelper =  C plus [ C isOne [ Pi 2 1 ] , C isZero [ divides ]  ]; 
+
+let primHelper2 = (l49 primHelper);
+
+let isPrime = C mul [ biggerThanOne, C primHelper2 [Pi 1 1, Pi 1 1] ];
+
+-- compare HsIsPrime with isPrime;
+
+compare [e| ((\x -> if x then 1 else 0) . T.isPrime . toInteger)  |] with isPrime; 
+-- compare [e| ((\x -> if x then 1 else 0) . (\n -> if n <2 then False else not $ any (\x  -> rem n x == 0) [2..(floor $ sqrt $ fromIntegral  n)])) |] with isPrime;
+
+let expHelper = P ( unaryOne )  ( C mul [ Pi 3 1, Pi 3 3  ]  );
+
+
+let exp = C expHelper [Pi 2 2, Pi 2 1]; 
+
+-- compare Hsexp with exp;
+
+compare [e| (^) |] with exp;
+
+
+let two = C S [ C S [Z 1] ];
+
+let primBound = C exp [ two  , C  exp [ two, Pi 1 1 ]    ];
+
+-- compare [e| \ x -> 2 ^ ( 2 ^ x) |] with primBound;
+
+
+--let ifElse1 =  \ b : PR 1 f1 : PR 1 f2 : PR 1 -> C plus [C mul [b ,f1]   , C mul [C oneMinus [ b ] ,f2]  ]; 
+let ifElse1 =  \ b : PR 1 f1 : PR 1 f2 : PR 1  -> C ifElseHelper [b, f1 ,f2 ];
+
+-- let ifElse2 =  \ b : PR 2 f1 : PR 2 f2 : PR 2 -> C plus [C mul [b ,f1]   , C mul [C oneMinus [ b ] ,f2]  ]; 
+let ifElse2 =  \ b : PR 2 f1 : PR 2 f2 : PR 2  -> C ifElseHelper [b, f1 ,f2 ];
+
+let boundedQuantG = \ f : PR 2 ->  ifElse1 ( C isZero [ C f [  Z 1  , Pi 1 1   ] ]) (Z 1  )  ( unaryOne );
+
+
+
+let and = C notZero [mul];
+
+compare [e| \x y -> if (x /= 0 && y /= 0) then 1 else 0  |] with and;
+
+
+let or = C notZero [plus];
+
+compare [e| \x y -> if (x /= 0 && y /= 0) then 1 else 0  |] with and;
+
+
+
+
+let smallerOrEqual = C or [ equal, smaller  ];
+
+
+let boundedQuantHb1 = C smallerOrEqual [Pi 3 1, C dec [ Pi 3 2] ];
+
+
+
+
+let boundedQuantHb2 = \f : PR 2 ->  C and [ C equal [Pi 3 1 , Pi 3 2  ] , C isZero [ C f [ Pi 3 2, Pi 3 3] ]  ];
+
+
+
+
+let boundedQuantH1  = Pi 3 1;
+
+
+let boundedQuantH2  =Pi 3 2 ;
+
+let boundedQuantH3 =  C S [ boundedQuantH2 ] ;
+
+let boundedQuantH = \f: PR 2 -> ifElse  boundedQuantHb1  boundedQuantH1 (ifElse (boundedQuantHb2 f) boundedQuantH2 boundedQuantH3);
+
+
+
+let boundedQuant = \f : PR 2 -> P (boundedQuantG f) (boundedQuantH f);
+
+
+let bigger = C smaller [ Pi 2 2 , Pi 2 1 ];
+
+
+let isPrimeAndBiggerThan = C and [ C isPrime [ Pi 2 1 ] ,   bigger   ];
+
+let notPrimeOrSmallerThan = C isZero [isPrimeAndBiggerThan];
+
+let nthPrimeHelper = boundedQuant notPrimeOrSmallerThan;
+
+
+
+
+compare [e|  let nextPrime = P.unPrime . P.nextPrime
+     in ( \n m ->
+            let next = nextPrime (m + 1) in
+                min next n
+        )
+   |] with nthPrimeHelper;
+
+
+compare [e| (let isPrime = (T.isPrime . toInteger)
+   in ( \n nthPrime ->
+          let primes = ((filter isPrime) [(nthPrime + 1) .. n])
+           in case primes of
+                [] ->  n
+                x : _ -> x
+     ))  |] with nthPrimeHelper;
+
+
+--compare [e| (let isPrime = (\n -> if n <2 then False else not $ any (\x  -> rem n x == 0) [2..(floor $ sqrt $ fromIntegral  n)])
+--   in ( \n m ->
+--          let primes = ((filter isPrime) [(m + 1) .. n])
+--           in case primes of
+--                [] ->  n
+--                x : _ -> x
+--      ))  |] with nthPrimeHelper;
+
+
+let primBound2 = C exp [two,C S [S]  ];
+compare [e|  (\ x -> 2 ^ ( x+ 2))  |] with primBound2;
+
+-- let nthPrime = P ( C S [  C S [Z 0] ] )  ( C nthPrimeHelper [C primBound [ C S [  Pi 2 2]   ] , Pi 2 1  ]  ); 
+let nthPrime = 
+     P ( C S [ C S [Z 0] ] ) ( C nthPrimeHelper [C primBound2 [ Pi 2 2] , Pi 2 1 ] ); 
+
+
+compare [e|  \ n -> 
+     fromInteger $ P.unPrime $ C.nthPrime $ fromIntegral $ n + 1  |] with nthPrime;
+
+
+
+let iter = \ pr : PR 1 ->    P (Pi 1 1)  (C pr [Pi 3 1] ) ;
+
+let iter' = \ pr : PR 1  n : Nat  m : Nat ->  run (iter pr) [n,m]  ;
+
+let plus' = iter (S);
+
+
