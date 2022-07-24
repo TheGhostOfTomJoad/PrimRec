@@ -1,0 +1,27 @@
+
+let plus = P (\ acc :Nat  n : Nat -> S acc);
+compare [e| (+) |] with plus;
+
+let compose = \ f: (Nat -> Nat)  g: (Nat -> Nat) x:Nat -> f (g x);
+let id = \x:Nat -> x;
+let iter = \ f: (Nat -> Nat)  -> P (\ acc :(Nat -> Nat)  n : Nat -> compose acc f) id;
+
+
+let plus2 =  iter S; 
+compare [e| (+) |] with plus2;
+
+let mul = \ n : Nat -> P (\ acc :Nat  counter :Nat  -> plus acc n) 0;
+compare [e| (*) |] with mul;
+
+
+
+let fac = P (\ acc :Nat  counter :Nat  -> mul acc (S counter)) 1;
+
+
+
+compare [e| (\f n ->  foldr (.) id  $ replicate (fromEnum n)  f) |] with iter;
+
+let pred = P (\ acc :Nat  counter :Nat  -> counter ) 0;
+
+
+compare [e| (\n -> if n == 0 then 0 else n - 1) |] with pred;

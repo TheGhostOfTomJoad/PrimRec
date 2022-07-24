@@ -1,0 +1,4 @@
+let plus = P (\ acc :Nat  n : Nat -> S acc) in
+    plus 100 200
+
+-- compare [e| (*) |] with plus;
